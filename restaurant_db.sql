@@ -5,90 +5,90 @@ CREATE DATABASE IF NOT EXISTS restaurant_db
 USE restaurant_db;
 
 -- ------------------------------------------------------------
--- 1. USERS
+-- 1. UTILIZATORI
 -- ------------------------------------------------------------
-CREATE TABLE users (
-  id          INT           NOT NULL AUTO_INCREMENT,
-  name        VARCHAR(100)  NOT NULL,
-  email       VARCHAR(150)  NOT NULL UNIQUE,
-  password    VARCHAR(255)  NOT NULL,          -- bcrypt hash
-  role        ENUM('client','admin') NOT NULL DEFAULT 'client',
-  created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE utilizatori (
+  id            INT           NOT NULL AUTO_INCREMENT,
+  nume          VARCHAR(100)  NOT NULL,
+  email         VARCHAR(150)  NOT NULL UNIQUE,
+  parola        VARCHAR(255)  NOT NULL,          -- bcrypt hash
+  rol           ENUM('client','admin') NOT NULL DEFAULT 'client',
+  creat_la      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 );
 
 -- ------------------------------------------------------------
--- 2. TABLES  (mesele din restaurant)
+-- 2. MESE  (mesele din restaurant)
 -- ------------------------------------------------------------
-CREATE TABLE tables (
-  id          INT           NOT NULL AUTO_INCREMENT,
-  number      INT           NOT NULL UNIQUE,   -- numarul mesei (ex: 1, 2, 3...)
-  capacity    INT           NOT NULL,          -- nr. maxim de persoane
-  location    VARCHAR(100)  NOT NULL,          -- ex: 'Terasa', 'Interior', 'Privat'
-  is_active   BOOLEAN       NOT NULL DEFAULT TRUE,
+CREATE TABLE mese (
+  id            INT           NOT NULL AUTO_INCREMENT,
+  numar         INT           NOT NULL UNIQUE,   -- numarul mesei (ex: 1, 2, 3...)
+  capacitate    INT           NOT NULL,          -- nr. maxim de persoane
+  locatie       VARCHAR(100)  NOT NULL,          -- ex: 'Terasa', 'Interior', 'Sala privata'
+  este_activa   BOOLEAN       NOT NULL DEFAULT TRUE,
   PRIMARY KEY (id)
 );
 
 -- ------------------------------------------------------------
--- 3. RESERVATIONS
+-- 3. REZERVARI
 -- ------------------------------------------------------------
-CREATE TABLE reservations (
-  id          INT           NOT NULL AUTO_INCREMENT,
-  user_id     INT           NOT NULL,
-  table_id    INT           NOT NULL,
-  date        DATE          NOT NULL,
-  time        TIME          NOT NULL,
-  guests      INT           NOT NULL,
-  status      ENUM('pending','confirmed','cancelled') NOT NULL DEFAULT 'pending',
-  notes       TEXT,
-  created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE rezervari (
+  id            INT           NOT NULL AUTO_INCREMENT,
+  utilizator_id INT           NOT NULL,
+  masa_id       INT           NOT NULL,
+  data          DATE          NOT NULL,
+  ora           TIME          NOT NULL,
+  nr_persoane   INT           NOT NULL,
+  status        ENUM('in_asteptare','confirmata','anulata') NOT NULL DEFAULT 'in_asteptare',
+  observatii    TEXT,
+  creat_la      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  FOREIGN KEY (user_id)  REFERENCES users(id)  ON DELETE CASCADE,
-  FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE CASCADE
+  FOREIGN KEY (utilizator_id) REFERENCES utilizatori(id) ON DELETE CASCADE,
+  FOREIGN KEY (masa_id)       REFERENCES mese(id)        ON DELETE CASCADE
 );
 
 -- ------------------------------------------------------------
--- 4. MENU_ITEMS
+-- 4. PREPARATE_MENIU
 -- ------------------------------------------------------------
-CREATE TABLE menu_items (
-  id           INT            NOT NULL AUTO_INCREMENT,
-  name         VARCHAR(150)   NOT NULL,
-  description  TEXT,
-  price        DECIMAL(8, 2)  NOT NULL,
-  category     VARCHAR(100)   NOT NULL,        -- ex: 'Aperitive', 'Fel principal', 'Desert', 'Bauturi'
-  is_available BOOLEAN        NOT NULL DEFAULT TRUE,
+CREATE TABLE preparate_meniu (
+  id              INT            NOT NULL AUTO_INCREMENT,
+  denumire        VARCHAR(150)   NOT NULL,
+  descriere       TEXT,
+  pret            DECIMAL(8, 2)  NOT NULL,
+  categorie       VARCHAR(100)   NOT NULL,        -- ex: 'Aperitive', 'Fel principal', 'Desert', 'Bauturi'
+  este_disponibil BOOLEAN        NOT NULL DEFAULT TRUE,
   PRIMARY KEY (id)
 );
 
 -- ------------------------------------------------------------
--- 5. REVIEWS
+-- 5. RECENZII
 -- ------------------------------------------------------------
-CREATE TABLE reviews (
-  id           INT   NOT NULL AUTO_INCREMENT,
-  user_id      INT   NOT NULL,
-  menu_item_id INT   NOT NULL,
-  rating       INT   NOT NULL CHECK (rating BETWEEN 1 AND 5),
-  comment      TEXT,
-  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE recenzii (
+  id              INT   NOT NULL AUTO_INCREMENT,
+  utilizator_id   INT   NOT NULL,
+  preparat_id     INT   NOT NULL,
+  calificativ     INT   NOT NULL CHECK (calificativ BETWEEN 1 AND 5),
+  comentariu      TEXT,
+  creat_la        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE KEY uq_user_item (user_id, menu_item_id),   -- un user = o recenzie per preparat
-  FOREIGN KEY (user_id)      REFERENCES users(id)      ON DELETE CASCADE,
-  FOREIGN KEY (menu_item_id) REFERENCES menu_items(id) ON DELETE CASCADE
+  UNIQUE KEY uq_utilizator_preparat (utilizator_id, preparat_id),
+  FOREIGN KEY (utilizator_id) REFERENCES utilizatori(id)     ON DELETE CASCADE,
+  FOREIGN KEY (preparat_id)   REFERENCES preparate_meniu(id) ON DELETE CASCADE
 );
 
 -- ============================================================
---  DATE DE TEST (Seed Data)
+--  DATE DE TEST
 -- ============================================================
 
--- Admin + 3 clienti (parola pentru toti: "password123" — hash bcrypt)
-INSERT INTO users (name, email, password, role) VALUES
+-- Admin + 3 clienti 
+INSERT INTO utilizatori (nume, email, parola, rol) VALUES
   ('Admin Restaurant', 'admin@restaurant.md', '$2b$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'admin'),
   ('Ion Popescu',      'ion@mail.com',        '$2b$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'client'),
   ('Maria Ionescu',    'maria@mail.com',      '$2b$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'client'),
   ('Alex Rusu',        'alex@mail.com',       '$2b$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'client');
 
 -- 6 mese
-INSERT INTO tables (number, capacity, location) VALUES
+INSERT INTO mese (numar, capacitate, locatie) VALUES
   (1, 2,  'Interior'),
   (2, 4,  'Interior'),
   (3, 4,  'Interior'),
@@ -97,7 +97,7 @@ INSERT INTO tables (number, capacity, location) VALUES
   (6, 10, 'Sala privata');
 
 -- Meniu
-INSERT INTO menu_items (name, description, price, category) VALUES
+INSERT INTO preparate_meniu (denumire, descriere, pret, categorie) VALUES
   ('Bruschette cu rosii',      'Paine crocanta cu rosii cherry si busuioc', 45.00,  'Aperitive'),
   ('Supa crema de ciuperci',   'Supa de ciuperci cu smantana si crutoane',  55.00,  'Supe'),
   ('File de somon la gratar',  'Somon cu legume la abur si sos de lamaie',  195.00, 'Fel principal'),
@@ -109,13 +109,13 @@ INSERT INTO menu_items (name, description, price, category) VALUES
   ('Vin rosu (pahar)',         'Cabernet Sauvignon, sec, 150ml',             60.00, 'Bauturi');
 
 -- Cateva rezervari de test
-INSERT INTO reservations (user_id, table_id, date, time, guests, status, notes) VALUES
-  (2, 2, '2025-06-10', '19:00', 3, 'confirmed', 'Aniversare — rugam un desert surpriza'),
-  (3, 4, '2025-06-11', '20:00', 4, 'pending',   NULL),
-  (4, 1, '2025-06-12', '13:00', 2, 'pending',   'Alergic la gluten');
+INSERT INTO rezervari (utilizator_id, masa_id, data, ora, nr_persoane, status, observatii) VALUES
+  (2, 2, '2025-06-10', '19:00', 3, 'confirmata',   'Aniversare — rugam un desert surpriza'),
+  (3, 4, '2025-06-11', '20:00', 4, 'in_asteptare', NULL),
+  (4, 1, '2025-06-12', '13:00', 2, 'in_asteptare', 'Alergic la gluten');
 
 -- Cateva recenzii de test
-INSERT INTO reviews (user_id, menu_item_id, rating, comment) VALUES
+INSERT INTO recenzii (utilizator_id, preparat_id, calificativ, comentariu) VALUES
   (2, 3, 5, 'Somonul a fost perfect, recomand cu caldura!'),
-  (3, 4, 4, 'Carbonara buna, dar portia putina cam mica.'),
+  (3, 4, 4, 'Carbonara buna, dar portia cam mica.'),
   (4, 6, 5, 'Cel mai bun tort de ciocolata pe care l-am mancat.');
