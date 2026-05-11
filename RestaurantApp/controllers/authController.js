@@ -1,1 +1,92 @@
+const bcrypt = require('bcryptjs');
+const jwt    = require('jsonwebtoken');
+const db     = require('../config/db');
 
+// POST /api/auth/register
+const register = async (req, res) => {
+  const { nume, email, parola, rol } = req.body;
+
+  if (!nume || !email || !parola) {
+    return res.status(400).json({ mesaj: 'Toate campurile sunt obligatorii.' });
+  }
+
+  try {
+    // 1. Verificam daca email-ul exista deja
+    const [existent] = await db.query(
+      'SELECT id FROM utilizatori WHERE email = ?', [email]
+    );
+    
+    if (existent.length > 0) {
+      return res.status(409).json({ mesaj: 'Acest email este deja inregistrat.' });
+    }
+
+    // 2. Hash parola
+    const parolaHash = await bcrypt.hash(parola, 10);
+
+    // 3. Salvam utilizatorul (Am adăugat coloana 'rol' și 'creat_la')
+    // Dacă 'rol' nu este trimis, punem implicit 'client'
+    const [rezultat] = await db.query(
+      'INSERT INTO utilizatori (nume, email, parola, rol, creat_la) VALUES (?, ?, ?, ?, NOW())',
+      [nume, email, parolaHash, rol || 'client']
+    );
+
+    res.status(201).json({
+      mesaj: 'Cont creat cu succes!',
+      id: rezultat.insertId
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mesaj: 'Eroare server.', eroare: err.message });
+  }
+};
+
+// POST /api/auth/login
+const login = async (req, res) => {
+  const { email, parola } = req.body;
+
+  if (!email || !parola) {
+    return res.status(400).json({ mesaj: 'Email si parola sunt obligatorii.' });
+  }
+
+  try {
+    // 1. Cautam utilizatorul
+    const [utilizatori] = await db.query(
+      'SELECT * FROM utilizatori WHERE email = ?', [email]
+    );
+    
+    if (utilizatori.length === 0) {
+      return res.status(401).json({ mesaj: 'Email sau parola incorecte.' });
+    }
+
+    const utilizator = utilizatori[0];
+
+    // 2. Verificam parola
+    const parolaCorecta = await bcrypt.compare(parola, utilizator.parola);
+    if (!parolaCorecta) {
+      return res.status(401).json({ mesaj: 'Email sau parola incorecte.' });
+    }
+
+    // 3. Generam token JWT
+    const token = jwt.sign(
+      { id: utilizator.id, rol: utilizator.rol, nume: utilizator.nume },
+      process.env.JWT_SECRET || 'secret_cheie_temporara', 
+      { expiresIn: process.env.JWT_EXPIRES || '1d' }
+    );
+
+    res.json({
+      mesaj: 'Autentificare reusita!',
+      token,
+      utilizator: {
+        id:    utilizator.id,
+        nume:  utilizator.nume,
+        email: utilizator.email,
+        rol:   utilizator.rol
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mesaj: 'Eroare server.', eroare: err.message });
+  }
+};
+
+module.exports = { register, login };
