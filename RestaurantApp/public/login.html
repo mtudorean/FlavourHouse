@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autentificare — Flavour House</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      min-height: 100vh; 
+      padding: 2rem;
+      margin: 0;
+      background: linear-gradient(rgba(44, 26, 14, 0.75), rgba(44, 26, 14, 0.75)), 
+                  url('https://media.gettyimages.com/id/1632045436/video/defocus-after-work-dinner-party.jpg?s=640x640&k=20&c=yxpzzxIzMyTx0dXF350Sa_MqFmlVjyDskMo8bTIoD7I=');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+
+    .auth-wrapper {
+      display: grid; grid-template-columns: 1fr 1fr;
+      max-width: 900px; width: 100%;
+      border-radius: var(--radius-lg);
+      overflow: hidden; box-shadow: var(--shadow-lg);
+      background: var(--alb);
+    }
+
+    .auth-banner {
+      background: linear-gradient(160deg, var(--maro) 0%, var(--maro-med) 100%);
+      padding: 3rem 2.5rem; display: flex; flex-direction: column; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+
+    .auth-banner::before {
+      content: '🍽️'; font-size: 12rem; position: absolute;
+      right: -2rem; bottom: -2rem; opacity: 0.08; line-height: 1;
+    }
+
+    .auth-banner-label {
+      font-size: 13px; font-weight: 500; letter-spacing: 0.2em;
+      color: var(--auriu); text-transform: uppercase; margin-bottom: 1rem;
+    }
+
+    .auth-banner h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; color: var(--crem); line-height: 1.3; margin-bottom: 1rem;
+    }
+
+    .auth-banner p { font-size: 16px; color: rgba(245,240,232,0.65); }
+
+    .auth-form-side { background: var(--alb); padding: 3rem 2.5rem; }
+
+    .auth-logo {
+      font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--maro); margin-bottom: 2rem; display: block; }
+    
+
+    .auth-logo span { color: var(--auriu); }
+
+    .auth-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--maro); margin-bottom: 0.4rem; }
+
+    .auth-sub { font-size: 14px; color: var(--gri); margin-bottom: 2rem; }
+
+    .auth-footer { margin-top: 1.5rem; text-align: center; font-size: 14px; color: var(--gri); }
+
+    .auth-footer a { color: var(--auriu); text-decoration: none; font-weight: 500; }
+
+    .auth-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 640px) {
+      .auth-wrapper { grid-template-columns: 1fr; max-width: 450px; }
+      .auth-banner { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-wrapper">
+  <div class="auth-banner">
+    <p class="auth-banner-label">Bun venit înapoi</p>
+    <h2>O masă te așteaptă</h2>
+    <p>Autentifică-te pentru a gestiona rezervările tale și a descoperi preparatele noastre.</p>
+  </div>
+  <div class="auth-form-side">
+    <a href="index.html" class="auth-logo">Flavour <span>House</span></a>
+    <h2 class="auth-title">Autentificare</h2>
+    <p class="auth-sub">Introdu datele contului tău</p>
+
+    <div id="alert" class="alert"></div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="exemplu@mail.com">
+    </div>
+    <div class="form-group">
+      <label>Parolă</label>
+      <input type="password" id="parola" placeholder="••••••••">
+    </div>
+    <button class="btn btn-dark btn-full" onclick="login()">Intră în cont</button>
+
+    <div class="auth-footer">
+      Nu ai cont? <a href="register.html">Înregistrează-te</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// Daca e deja autentificat, redirectam
+if (localStorage.getItem('token')) {
+  const u = JSON.parse(localStorage.getItem('utilizator') || '{}');
+  window.location.href = u.rol === 'admin' ? 'admin/dashboard.html' : 'rezervarile-mele.html';
+}
+
+async function login() {
+  const email  = document.getElementById('email').value.trim();
+  const parola = document.getElementById('parola').value;
+  const alert  = document.getElementById('alert');
+
+  alert.className = 'alert'; alert.textContent = '';
+
+  if (!email || !parola) {
+    alert.className = 'alert alert-error show';
+    alert.textContent = 'Completează toate câmpurile.';
+    return;
+  }
+
+  try {
+    const res  = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, parola })
+    });
+    const date = await res.json();
+
+    if (!res.ok) {
+      alert.className = 'alert alert-error show';
+      alert.textContent = date.mesaj;
+      return;
+    }
+
+    localStorage.setItem('token', date.token);
+    localStorage.setItem('utilizator', JSON.stringify(date.utilizator));
+
+    alert.className = 'alert alert-success show';
+    alert.textContent = 'Autentificare reușită! Se redirecționează...';
+
+    setTimeout(() => {
+      window.location.href = date.utilizator.rol === 'admin'
+        ? 'admin/dashboard.html'
+        : 'rezervarile-mele.html';
+    }, 800);
+  } catch (e) {
+    alert.className = 'alert alert-error show';
+    alert.textContent = 'Eroare de conexiune. Încearcă din nou.';
+  }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+</script>
+</body>
+</html>
