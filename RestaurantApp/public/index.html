@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flavour House</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(160deg, var(--maro) 0%, var(--maro-med) 100%);
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 6rem 1.5rem 4rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C8922A' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 700px; }
+    .hero-subtitle {
+      font-size: 12px; font-weight: 500; letter-spacing: 0.2em;
+      color: var(--auriu); text-transform: uppercase; margin-bottom: 1.2rem;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-weight: 700; color: var(--crem);
+      line-height: 1.1; margin-bottom: 1.5rem;
+    }
+    .hero h1 em { color: var(--auriu); font-style: italic; }
+    .hero p {
+      font-size: 1.05rem; color: rgba(245,240,232,0.75);
+      max-width: 500px; margin: 0 auto 2.5rem;
+    }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .hero-scroll {
+      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      color: rgba(245,240,232,0.4); font-size: 12px; letter-spacing: 0.1em;
+      text-transform: uppercase; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .scroll-line {
+      width: 2px; height: 40px;
+      background: linear-gradient(to bottom, rgba(200,146,42,0.6), transparent);
+      animation: scrollPulse 1.5s ease-in-out infinite;
+    }
+    @keyframes scrollPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+    /* Sectiuni */
+    section { padding: 5rem 0; }
+    .section-label {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.2em;
+      color: var(--auriu); text-transform: uppercase; margin-bottom: 0.8rem;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 700; color: var(--maro);
+      line-height: 1.2; margin-bottom: 1.2rem;
+    }
+    .section-desc { color: var(--gri); max-width: 520px; }
+
+    /* Meniu preview */
+    .meniu-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .preparat-card {
+      background: var(--alb); border-radius: var(--radius-lg);
+      border: 1px solid rgba(212,206,198,0.5);
+      transition: transform var(--transition), box-shadow var(--transition);
+      overflow: hidden;
+    }
+    .preparat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .preparat-img {
+      width: 100%; height: 180px; object-fit: cover; display: block;
+    }
+    .preparat-body { padding: 1.2rem; }
+    .preparat-categorie {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--auriu); margin-bottom: 0.5rem;
+    }
+    .preparat-nume {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem; font-weight: 600; color: var(--maro);
+      margin-bottom: 0.4rem;
+    }
+    .preparat-desc { font-size: 13px; color: var(--gri); margin-bottom: 1rem; }
+    .preparat-footer { display: flex; align-items: center; justify-content: space-between; }
+    .preparat-pret { font-size: 1.1rem; font-weight: 600; color: var(--auriu); }
+    .preparat-rating { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--gri); }
+    .preparat-rating .stea-mica { color: var(--auriu); font-size: 14px; }
+
+    /* Info boxes */
+    .info-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .info-box {
+      text-align: center; padding: 2rem 1rem;
+      background: var(--alb); border-radius: var(--radius-lg);
+      border: 1px solid rgba(212,206,198,0.5);
+    }
+    .info-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .info-titlu { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--maro); margin-bottom: 0.4rem; }
+    .info-text { font-size: 14px; color: var(--gri); }
+
+    /* ── SECTIUNEA DESPRE ── */
+    .despre-layout {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 4rem; align-items: center;
+    }
+    .despre-img-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      grid-template-rows: 200px 200px;
+      gap: 12px;
+    }
+    .despre-img-grid img {
+      width: 100%; height: 100%; object-fit: cover;
+      border-radius: var(--radius-lg);
+    }
+    .despre-img-grid img:first-child {
+      grid-row: span 2; height: 100%;
+    }
+    .despre-text .section-label { margin-bottom: 0.5rem; }
+    .despre-text .section-title { margin-bottom: 1rem; }
+    .despre-text p {
+      color: var(--gri); font-size: 15px; line-height: 1.8;
+      margin-bottom: 1.2rem;
+    }
+    .despre-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1rem; margin: 1.8rem 0;
+      padding: 1.5rem 0;
+      border-top: 1px solid var(--crem-dark);
+      border-bottom: 1px solid var(--crem-dark);
+    }
+    .despre-stat { text-align: center; }
+    .despre-stat-nr {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 700; color: var(--auriu);
+      line-height: 1;
+    }
+    .despre-stat-label { font-size: 12px; color: var(--gri); margin-top: 4px; }
+
+    .valori-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1rem; margin-top: 1.5rem;
+    }
+    .valoare-box {
+      background: var(--alb); border-radius: var(--radius-lg);
+      padding: 1.2rem; border: 1px solid rgba(212,206,198,0.5);
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .valoare-icon {
+      font-size: 1.5rem; flex-shrink: 0; margin-top: 2px;
+    }
+    .valoare-titlu {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem; font-weight: 600; color: var(--maro);
+      margin-bottom: 3px;
+    }
+    .valoare-text { font-size: 12px; color: var(--gri); line-height: 1.5; }
+
+    .membru-card {
+      text-align: center; background: var(--alb);
+      border-radius: var(--radius-lg); overflow: hidden;
+      border: 1px solid rgba(212,206,198,0.5);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .membru-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .membru-img {
+      width: 100%; height: 200px; object-fit: cover; object-position: top;
+    }
+    .membru-info { padding: 1rem; }
+    .membru-nume {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 600; color: var(--maro); margin-bottom: 3px;
+    }
+    .membru-rol { font-size: 12px; color: var(--auriu); font-weight: 500; }
+
+    /* CTA rezervare */
+    .cta-section {
+      background: linear-gradient(135deg, var(--maro) 0%, var(--maro-med) 100%);
+      border-radius: var(--radius-lg); padding: 4rem 3rem;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .cta-section::after {
+      content: '"'; font-family: 'Playfair Display', serif;
+      font-size: 20rem; line-height: 1; color: rgba(200,146,42,0.06);
+      position: absolute; right: -2rem; bottom: -4rem; pointer-events: none;
+    }
+    .cta-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      color: var(--crem); margin-bottom: 1rem;
+    }
+    .cta-section p { color: rgba(245,240,232,0.7); margin-bottom: 2rem; }
+
+    /* Skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, var(--crem-dark) 25%, var(--crem) 50%, var(--crem-dark) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px; height: 16px; margin-bottom: 8px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    @media (max-width: 768px) {
+      .despre-layout { grid-template-columns: 1fr; }
+      .despre-img-grid { display: none; }
+      .valori-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Flavour 🏠︎ House</a>
+  <div class="nav-links">
+    <a href="#meniu">Meniu</a>
+    <a href="#despre">Despre</a>
+    <a href="rezervare.html">Rezervări</a>
+    <a href="login.html" class="btn-nav" id="btn-auth">Autentificare</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content fade-in">
+    <p class="hero-subtitle">Restaurant & Bistro · Chișinău</p>
+    <h1>O experiență <em>gastronomică</em> de neuitat</h1>
+    <p>Bucătărie rafinată, atmosferă caldă și servicii impecabile pentru fiecare ocazie specială.</p>
+    <div class="hero-btns">
+      <a href="rezervare.html" class="btn btn-primary">Rezervă o masă</a>
+      <a href="#meniu" class="btn btn-outline" style="color:var(--crem);border-color:rgba(245,240,232,0.3)">Vezi meniul</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- Info -->
+<section>
+  <div class="container">
+    <div class="info-grid">
+      <div class="info-box">
+        <div class="info-icon">🕐</div>
+        <div class="info-titlu">Program</div>
+        <div class="info-text">Luni – Vineri: 09:00 – 23:00<br>Sâmbătă – Duminică: 11:00 – 23:00</div>
+      </div>
+      <div class="info-box">
+        <div class="info-icon">📍</div>
+        <div class="info-titlu">Locație</div>
+        <div class="info-text">Bd. Ștefan cel Mare 100<br>Chișinău, Moldova</div>
+      </div>
+      <div class="info-box">
+        <div class="info-icon">📞</div>
+        <div class="info-titlu">Rezervări</div>
+        <div class="info-text">+373 22 123 456<br>rezervari@flavourhouse.md</div>
+      </div>
+      <div class="info-box">
+        <div class="info-icon">🍽️</div>
+        <div class="info-titlu">Capacitate</div>
+        <div class="info-text">6 mese disponibile<br>Sală privată pentru evenimente</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Meniu -->
+<section id="meniu" style="background: var(--crem-dark);">
+  <div class="container">
+    <p class="section-label">Gastronomie</p>
+    <h2 class="section-title">Meniul nostru</h2>
+    <p class="section-desc">Preparate atent selectate, ingrediente proaspete și rețete cu suflet.</p>
+    <div class="meniu-grid" id="meniu-grid">
+      <div class="preparat-card"><div class="skeleton" style="width:100%;height:180px;border-radius:0"></div><div style="padding:1.2rem"><div class="skeleton" style="width:60%;height:12px"></div><div class="skeleton" style="width:80%"></div><div class="skeleton" style="width:100%;height:12px"></div></div></div>
+      <div class="preparat-card"><div class="skeleton" style="width:100%;height:180px;border-radius:0"></div><div style="padding:1.2rem"><div class="skeleton" style="width:60%;height:12px"></div><div class="skeleton" style="width:80%"></div><div class="skeleton" style="width:100%;height:12px"></div></div></div>
+      <div class="preparat-card"><div class="skeleton" style="width:100%;height:180px;border-radius:0"></div><div style="padding:1.2rem"><div class="skeleton" style="width:60%;height:12px"></div><div class="skeleton" style="width:80%"></div><div class="skeleton" style="width:100%;height:12px"></div></div></div>
+    </div>
+    <div style="text-align:center;margin-top:2rem">
+      <a href="rezervare.html" class="btn btn-dark">Rezervă acum</a>
+    </div>
+  </div>
+</section>
+
+<!-- DESPRE -->
+<section id="despre">
+  <div class="container">
+
+    <!-- Povestea restaurantului -->
+    <div class="despre-layout">
+      <div class="despre-img-grid">
+        <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80" alt="Interiorul restaurantului">
+        <img src="https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=400&q=80" alt="Bucatarie">
+        <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&q=80" alt="Preparate">
+      </div>
+      <div class="despre-text">
+        <p class="section-label">Povestea noastră</p>
+        <h2 class="section-title">Pasiune pentru gastronomie autentică</h2>
+        <p>Flavour House a luat naștere din dorința de a crea un loc în care mâncarea bună se îmbină cu atmosfera caldă și serviciile de calitate. De la prima zi, ne-am propus să aducem în farfurie cele mai bune ingrediente locale, pregătite cu grijă și respect pentru tradiție.</p>
+        <p>Fiecare preparat din meniul nostru este rezultatul unei munci atente — de la selecția ingredientelor până la prezentarea finală. Credem că o masă bună nu înseamnă doar hrană, ci o experiență completă.</p>
+
+        <div class="despre-stats">
+          <div class="despre-stat">
+            <div class="despre-stat-nr">5+</div>
+            <div class="despre-stat-label">Ani de experiență</div>
+          </div>
+          <div class="despre-stat">
+            <div class="despre-stat-nr">2k+</div>
+            <div class="despre-stat-label">Clienți mulțumiți</div>
+          </div>
+          <div class="despre-stat">
+            <div class="despre-stat-nr">30+</div>
+            <div class="despre-stat-label">Preparate în meniu</div>
+          </div>
+        </div>
+
+        <a href="rezervare.html" class="btn btn-primary">Rezervă o masă</a>
+      </div>
+    </div>
+
+    <!-- Valorile noastre -->
+    <div style="margin-top:5rem">
+      <p class="section-label">Ce ne definește</p>
+      <h2 class="section-title">Valorile noastre</h2>
+      <div class="valori-grid">
+        <div class="valoare-box">
+          <div class="valoare-icon">🌿</div>
+          <div>
+            <div class="valoare-titlu">Ingrediente proaspete</div>
+            <div class="valoare-text">Lucrăm cu furnizori locali și selectăm zilnic ingredientele de cea mai bună calitate.</div>
+          </div>
+        </div>
+        <div class="valoare-box">
+          <div class="valoare-icon">👨‍🍳</div>
+          <div>
+            <div class="valoare-titlu">Bucătari pasionați</div>
+            <div class="valoare-text">Echipa noastră de bucătari aduce experiență internațională și dragoste pentru gătit.</div>
+          </div>
+        </div>
+        <div class="valoare-box">
+          <div class="valoare-icon">🕯️</div>
+          <div>
+            <div class="valoare-titlu">Atmosferă intimă</div>
+            <div class="valoare-text">Un spațiu gândit pentru momente speciale — cine romantice, aniversări sau întâlniri de afaceri.</div>
+          </div>
+        </div>
+        <div class="valoare-box">
+          <div class="valoare-icon">⭐</div>
+          <div>
+            <div class="valoare-titlu">Servicii de calitate</div>
+            <div class="valoare-text">Fiecare client merită atenție și promptitudine. Satisfacția ta este prioritatea noastră.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding-top:0">
+  <div class="container">
+    <div class="cta-section">
+      <h2>Rezervă masa ta astăzi</h2>
+      <p>Asigurați-vă locul pentru o seară memorabilă. Confirmarea vine în cel mai scurt timp.</p>
+      <a href="rezervare.html" class="btn btn-primary">Fă o rezervare</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 <span>Flavour House</span> Restaurant · Chișinău, Moldova</p>
+</footer>
+
+<script>
+const token = localStorage.getItem('token');
+const utilizator = JSON.parse(localStorage.getItem('utilizator') || 'null');
+const btnAuth = document.getElementById('btn-auth');
+
+if (token && utilizator) {
+  btnAuth.textContent = utilizator.rol === 'admin' ? 'Admin Panel' : 'Contul meu';
+  btnAuth.href = utilizator.rol === 'admin' ? 'admin/dashboard.html' : 'rezervarile-mele.html';
+}
+
+async function incarcaMeniu() {
+  try {
+    const res  = await fetch('/api/meniu');
+    const date = await res.json();
+    const grid = document.getElementById('meniu-grid');
+
+    if (!date.length) {
+      grid.innerHTML = '<p style="color:var(--gri)">Meniul nu este disponibil momentan.</p>';
+      return;
+    }
+
+    grid.innerHTML = date .map(p => `
+      <div class="preparat-card fade-in">
+        <img
+          src="${p.imagine || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80'}"
+          alt="${p.denumire}"
+          class="preparat-img"
+          onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80'"
+        >
+        <div class="preparat-body">
+          <div class="preparat-categorie">${p.categorie}</div>
+          <div class="preparat-nume">${p.denumire}</div>
+          <div class="preparat-desc">${p.descriere || ''}</div>
+          <div class="preparat-footer">
+            <span class="preparat-pret">${parseFloat(p.pret).toFixed(2)} MDL</span>
+            <div class="preparat-rating">
+              <span class="stea-mica">★</span> ${p.rating || '5.0'}
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    document.getElementById('meniu-grid').innerHTML = '<p style="color:var(--gri)">Eroare la încărcarea meniului.</p>';
+  }
+}
+
+incarcaMeniu();
+</script>
+</body>
+</html>
