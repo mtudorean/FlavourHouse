@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rezervare — Flavour House</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .page-header {
+      background: linear-gradient(160deg, var(--maro) 0%, var(--maro-med) 100%);
+      padding: 5rem 1.5rem 3rem; text-align: center;
+    }
+    .page-header p { font-size: 11px; letter-spacing: 0.2em; color: var(--auriu); text-transform: uppercase; margin-bottom: 0.8rem; }
+    .page-header h1 { font-family: 'Playfair Display', serif; font-size: 2.4rem; color: var(--crem); }
+
+    .rezervare-layout {
+      display: grid; grid-template-columns: 1fr 380px; gap: 2rem;
+      max-width: 1000px; margin: 0 auto; padding: 3rem 1.5rem;
+      align-items: start;
+    }
+    .form-card { background: var(--alb); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow); }
+    .form-card h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--maro); margin-bottom: 1.5rem; }
+
+    .mese-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 0.5rem;
+    }
+    .masa-btn {
+      padding: 12px 8px; border-radius: var(--radius); border: 1.5px solid var(--gri-light);
+      background: var(--alb); cursor: pointer; text-align: center;
+      transition: all var(--transition); font-family: 'DM Sans', sans-serif;
+    }
+    .masa-btn:hover:not(.ocupata) { border-color: var(--auriu); background: rgba(200,146,42,0.06); }
+    .masa-btn.selectata { border-color: var(--auriu); background: rgba(200,146,42,0.1); }
+    .masa-btn.ocupata { opacity: 0.4; cursor: not-allowed; background: var(--crem-dark); }
+    .masa-nr { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; color: var(--maro); }
+    .masa-cap { font-size: 11px; color: var(--gri); }
+    .masa-loc { font-size: 11px; color: var(--auriu); font-weight: 500; }
+
+    .info-rezervare { background: var(--alb); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow); position: sticky; top: 80px; }
+    .info-rezervare h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--maro); margin-bottom: 1.2rem; }
+    .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--crem-dark); font-size: 14px; }
+    .info-row:last-of-type { border-bottom: none; }
+    .info-row span:first-child { color: var(--gri); }
+    .info-row span:last-child { font-weight: 500; color: var(--maro); }
+    .info-row span.gol { color: var(--gri-light); font-style: italic; font-weight: 400; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 768px) {
+      .rezervare-layout { grid-template-columns: 1fr; }
+      .info-rezervare { position: static; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Flavour <span>House</span></a>
+  <div class="nav-links">
+    <a href="index.html">Acasă</a>
+    <a href="index.html#meniu">Meniu</a>
+    <a href="rezervarile-mele.html" id="link-rezervarile-mele" style="display:none">Rezervările mele</a>
+    <a href="#" class="btn-nav" id="btn-auth" onclick="logout(event)">Ieși din cont</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <p>Rezervă acum</p>
+  <h1>Alege masa ta</h1>
+</div>
+
+<div class="rezervare-layout">
+  <!-- Formular -->
+  <div>
+    <div class="form-card">
+      <h2>📅 Data și ora</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Data</label>
+          <input type="date" id="data" onchange="cautaMese()">
+        </div>
+        <div class="form-group">
+          <label>Ora</label>
+          <select id="ora" onchange="cautaMese()">
+            <option value="">-- Selectează --</option>
+            <option>12:00</option><option>13:00</option><option>14:00</option>
+            <option>15:00</option><option>16:00</option><option>17:00</option>
+            <option>18:00</option><option>19:00</option><option>20:00</option>
+            <option>21:00</option><option>22:00</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Număr persoane</label>
+        <input type="number" id="nr_persoane" min="1" max="20" placeholder="ex: 2" oninput="actualizeazaResume()">
+      </div>
+    </div>
+
+    <div class="form-card" style="margin-top:1.5rem">
+      <h2>🪑 Selectează masa</h2>
+      <div id="mese-container">
+        <p style="color:var(--gri);font-size:14px">Selectează data și ora pentru a vedea mesele disponibile.</p>
+      </div>
+    </div>
+
+    <div class="form-card" style="margin-top:1.5rem">
+      <h2>📝 Observații (opțional)</h2>
+      <div class="form-group" style="margin-bottom:0">
+        <textarea id="observatii" placeholder="Ex: aniversare, alergii, preferințe speciale..." oninput="actualizeazaResume()"></textarea>
+      </div>
+    </div>
+
+    <div id="alert" class="alert" style="margin-top:1rem"></div>
+
+    <button class="btn btn-primary btn-full" style="margin-top:1rem;padding:14px" onclick="trimiteRezervare()">
+      Confirmă rezervarea
+    </button>
+  </div>
+
+  <!-- Rezumat -->
+  <div class="info-rezervare">
+    <h3>Rezumatul rezervării</h3>
+    <div class="info-row"><span>Data</span><span id="r-data" class="gol">Neselectată</span></div>
+    <div class="info-row"><span>Ora</span><span id="r-ora" class="gol">Neselectată</span></div>
+    <div class="info-row"><span>Persoane</span><span id="r-persoane" class="gol">—</span></div>
+    <div class="info-row"><span>Masa</span><span id="r-masa" class="gol">Neselectată</span></div>
+    <div class="info-row"><span>Observații</span><span id="r-obs" class="gol">—</span></div>
+    <div style="margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid var(--crem-dark);font-size:13px;color:var(--gri)">
+      ✅ Confirmarea rezervării se face în cel mult 2 ore.
+    </div>
+  </div>
+</div>
+
+<footer><p>© 2026 <span>Flavour House </span>Restaurant</p></footer>
+
+<script>
+// Verificam autentificarea
+const token = localStorage.getItem('token');
+const utilizator = JSON.parse(localStorage.getItem('utilizator') || 'null');
+
+if (!token) { window.location.href = 'login.html'; }
+
+if (utilizator) {
+  document.getElementById('btn-auth').textContent = `Ieși (${utilizator.nume.split(' ')[0]})`;
+  document.getElementById('link-rezervarile-mele').style.display = 'inline';
+}
+
+// Data minima = azi
+document.getElementById('data').min = new Date().toISOString().split('T')[0];
+
+let masaSelectata = null;
+
+function logout(e) {
+  e.preventDefault();
+  localStorage.removeItem('token');
+  localStorage.removeItem('utilizator');
+  window.location.href = 'login.html';
+}
+
+async function cautaMese() {
+  const data = document.getElementById('data').value;
+  const ora  = document.getElementById('ora').value;
+  actualizeazaResume();
+
+  if (!data || !ora) return;
+
+  const container = document.getElementById('mese-container');
+  container.innerHTML = '<p style="color:var(--gri);font-size:14px">Se caută mesele disponibile...</p>';
+  masaSelectata = null;
+
+  try {
+    const res  = await fetch(`/api/rezervari/disponibile?data=${data}&ora=${ora}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const mese = await res.json();
+
+    if (!mese.length) {
+      container.innerHTML = '<p style="color:var(--rosu);font-size:14px">Nu există mese disponibile pentru data și ora selectată.</p>';
+      return;
+    }
+
+    container.innerHTML = `<div class="mese-grid">${
+      mese.map(m => `
+        <div class="masa-btn" onclick="selecteazaMasa(${m.id}, ${m.numar}, '${m.locatie}', ${m.capacitate})">
+          <div class="masa-nr">Masa ${m.numar}</div>
+          <div class="masa-cap">${m.capacitate} persoane</div>
+          <div class="masa-loc">${m.locatie}</div>
+        </div>
+      `).join('')
+    }</div>`;
+  } catch (e) {
+    container.innerHTML = '<p style="color:var(--rosu);font-size:14px">Eroare la încărcarea meselor.</p>';
+  }
+}
+
+function selecteazaMasa(id, numar, locatie, capacitate) {
+  masaSelectata = { id, numar, locatie, capacitate };
+  document.querySelectorAll('.masa-btn').forEach(b => b.classList.remove('selectata'));
+  event.currentTarget.classList.add('selectata');
+  actualizeazaResume();
+}
+
+function actualizeazaResume() {
+  const data     = document.getElementById('data').value;
+  const ora      = document.getElementById('ora').value;
+  const persoane = document.getElementById('nr_persoane').value;
+  const obs      = document.getElementById('observatii').value;
+
+  document.getElementById('r-data').textContent     = data     || '—';
+  document.getElementById('r-data').className       = data     ? '' : 'gol';
+  document.getElementById('r-ora').textContent      = ora      || '—';
+  document.getElementById('r-ora').className        = ora      ? '' : 'gol';
+  document.getElementById('r-persoane').textContent = persoane ? `${persoane} pers.` : '—';
+  document.getElementById('r-persoane').className   = persoane ? '' : 'gol';
+  document.getElementById('r-masa').textContent     = masaSelectata ? `Masa ${masaSelectata.numar} (${masaSelectata.locatie})` : '—';
+  document.getElementById('r-masa').className       = masaSelectata ? '' : 'gol';
+  document.getElementById('r-obs').textContent      = obs      || '—';
+  document.getElementById('r-obs').className        = obs      ? '' : 'gol';
+}
+
+async function trimiteRezervare() {
+  const data       = document.getElementById('data').value;
+  const ora        = document.getElementById('ora').value;
+  const nr_persoane = parseInt(document.getElementById('nr_persoane').value);
+  const observatii = document.getElementById('observatii').value;
+  const alertEl    = document.getElementById('alert');
+
+  alertEl.className = 'alert';
+
+  if (!data || !ora || !nr_persoane || !masaSelectata) {
+    alertEl.className = 'alert alert-error show';
+    alertEl.textContent = 'Completează toate câmpurile și selectează o masă.';
+    return;
+  }
+
+  try {
+    const res  = await fetch('/api/rezervari', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ masa_id: masaSelectata.id, data, ora, nr_persoane, observatii })
+    });
+    const date = await res.json();
+
+    if (!res.ok) {
+      alertEl.className = 'alert alert-error show';
+      alertEl.textContent = date.mesaj;
+      return;
+    }
+
+    alertEl.className = 'alert alert-success show';
+    alertEl.textContent = '🎉 Rezervare creată cu succes! Vei fi contactat pentru confirmare.';
+    setTimeout(() => window.location.href = 'rezervarile-mele.html', 2000);
+  } catch (e) {
+    alertEl.className = 'alert alert-error show';
+    alertEl.textContent = 'Eroare de conexiune.';
+  }
+}
+</script>
+</body>
+</html>
