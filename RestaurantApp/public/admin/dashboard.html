@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Flavour House</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    body { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 240px; min-height: 100vh; background: var(--maro);
+      padding: 2rem 1.2rem; position: fixed; top: 0; left: 0;
+      display: flex; flex-direction: column; gap: 0.3rem;
+    }
+    .sidebar-logo { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--crem); margin-bottom: 2rem; padding: 0 0.5rem; }
+    .sidebar-logo span { color: var(--auriu); }
+    .sidebar a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 10px;
+      color: rgba(245,240,232,0.65); text-decoration: none;
+      font-size: 14px; font-weight: 500;
+      transition: all var(--transition);
+    }
+    .sidebar a:hover, .sidebar a.activ { background: rgba(200,146,42,0.15); color: var(--crem); }
+    .sidebar a.activ { color: var(--auriu); }
+    .sidebar-sep { height: 1px; background: rgba(245,240,232,0.1); margin: 0.5rem 0; }
+    .sidebar-bottom { margin-top: auto; }
+    .main-content { margin-left: 240px; flex: 1; padding: 2rem; }
+    .page-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--maro); margin-bottom: 0.3rem; }
+    .page-sub { color: var(--gri); font-size: 14px; margin-bottom: 2rem; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.2rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--alb); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid rgba(212,206,198,0.5); }
+    .stat-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gri); margin-bottom: 0.5rem; }
+    .stat-val { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--maro); }
+    .stat-sub { font-size: 12px; color: var(--gri); margin-top: 0.3rem; }
+
+    .section-card { background: var(--alb); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid rgba(212,206,198,0.5); }
+    .section-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; }
+    .section-card-header h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--maro); }
+
+    .filtru-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .filtru-btn { padding: 6px 14px; border-radius: 99px; border: 1.5px solid var(--gri-light); background: transparent; cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; transition: all var(--transition); }
+    .filtru-btn:hover, .filtru-btn.activ { border-color: var(--auriu); background: rgba(200,146,42,0.08); color: var(--maro); }
+
+    @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <!-- Logoul este acum un link către site-ul public -->
+  <a href="../index.html" class="sidebar-logo" style="text-decoration: none; display: block; margin-bottom: 2rem;">
+    Flavour <span>House</span>
+  </a>
+  
+  <a href="dashboard.html" class="activ">🗓️ Rezervări</a>
+  <a href="meniu.html">🍽️ Meniu</a>
+  
+  <div class="sidebar-sep"></div>
+  
+  <div class="sidebar-bottom">
+    <!-- Am eliminat link-ul "Site public" de aici -->
+    <a href="#" onclick="logout(event)">🚪 Deconectare</a>
+  </div>
+</aside>
+
+<main class="main-content">
+  <h1 class="page-title">Dashboard</h1>
+  <p class="page-sub" id="salut">Bun venit!</p>
+
+  <!-- Statistici -->
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Total rezervări</div><div class="stat-val" id="stat-total">—</div></div>
+    <div class="stat-card"><div class="stat-label">În așteptare</div><div class="stat-val" id="stat-asteptare" style="color:var(--auriu)">—</div></div>
+    <div class="stat-card"><div class="stat-label">Confirmate</div><div class="stat-val" id="stat-confirmate" style="color:var(--verde)">—</div></div>
+    <div class="stat-card"><div class="stat-label">Anulate</div><div class="stat-val" id="stat-anulate" style="color:var(--rosu)">—</div></div>
+  </div>
+
+  <!-- Rezervari -->
+  <div class="section-card">
+    <div class="section-card-header">
+      <h3>Toate rezervările</h3>
+    </div>
+    <div class="filtru-bar">
+      <button class="filtru-btn activ" onclick="filtreaza('toate', this)">Toate</button>
+      <button class="filtru-btn" onclick="filtreaza('in_asteptare', this)">În așteptare</button>
+      <button class="filtru-btn" onclick="filtreaza('confirmata', this)">Confirmate</button>
+      <button class="filtru-btn" onclick="filtreaza('anulata', this)">Anulate</button>
+    </div>
+    <div id="alert" class="alert"></div>
+    <div class="tabel-wrapper">
+      <table id="tabel-rezervari">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Client</th>
+            <th>Masa</th>
+            <th>Data</th>
+            <th>Ora</th>
+            <th>Pers.</th>
+            <th>Status</th>
+            <th>Acțiuni</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-rezervari">
+          <tr><td colspan="8" style="text-align:center;color:var(--gri);padding:2rem">Se încarcă...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+const token = localStorage.getItem('token');
+const utilizator = JSON.parse(localStorage.getItem('utilizator') || 'null');
+
+if (!token || !utilizator || utilizator.rol !== 'admin') {
+  window.location.href = '../login.html';
+}
+
+document.getElementById('salut').textContent = `Bun venit, ${utilizator?.nume}!`;
+
+function logout(e) {
+  e.preventDefault();
+  localStorage.removeItem('token');
+  localStorage.removeItem('utilizator');
+  window.location.href = '../login.html';
+}
+
+function formatData(dataStr) {
+  return new Date(dataStr).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+let toateRezervari = [];
+
+async function incarcaRezervari() {
+  try {
+    const res  = await fetch('/api/rezervari', { headers: { 'Authorization': `Bearer ${token}` } });
+    toateRezervari = await res.json();
+    afiseazaRezervari(toateRezervari);
+    actualizeazaStats(toateRezervari);
+  } catch (e) {
+    document.getElementById('tbody-rezervari').innerHTML = '<tr><td colspan="8" style="color:var(--rosu);text-align:center">Eroare la încărcare.</td></tr>';
+  }
+}
+
+function actualizeazaStats(date) {
+  document.getElementById('stat-total').textContent      = date.length;
+  document.getElementById('stat-asteptare').textContent  = date.filter(r => r.status === 'in_asteptare').length;
+  document.getElementById('stat-confirmate').textContent = date.filter(r => r.status === 'confirmata').length;
+  document.getElementById('stat-anulate').textContent    = date.filter(r => r.status === 'anulata').length;
+}
+
+function afiseazaRezervari(date) {
+  const tbody = document.getElementById('tbody-rezervari');
+  if (!date.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gri);padding:2rem">Nu există rezervări.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = date.map(r => `
+    <tr>
+      <td style="color:var(--gri)">#${r.id}</td>
+      <td><strong>${r.nume_client}</strong><br><span style="font-size:12px;color:var(--gri)">${r.email}</span></td>
+      <td>Masa ${r.numar_masa} <span style="font-size:12px;color:var(--auriu)">${r.locatie}</span></td>
+      <td>${formatData(r.data)}</td>
+      <td>${r.ora.slice(0,5)}</td>
+      <td>${r.nr_persoane}</td>
+      <td><span class="badge badge-${r.status === 'confirmata' ? 'confirmata' : r.status === 'anulata' ? 'anulata' : 'asteptare'}">
+        ${r.status === 'confirmata' ? '✓ Confirmată' : r.status === 'anulata' ? '✗ Anulată' : '⏳ Așteptare'}
+      </span></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        ${r.status !== 'confirmata' && r.status !== 'anulata' ? `<button class="btn btn-success btn-sm" onclick="schimbaStatus(${r.id},'confirmata')">Confirmă</button>` : ''}
+        ${r.status !== 'anulata' ? `<button class="btn btn-danger btn-sm" onclick="schimbaStatus(${r.id},'anulata')">Anulează</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filtreaza(status, btn) {
+  document.querySelectorAll('.filtru-btn').forEach(b => b.classList.remove('activ'));
+  btn.classList.add('activ');
+  const filtrate = status === 'toate' ? toateRezervari : toateRezervari.filter(r => r.status === status);
+  afiseazaRezervari(filtrate);
+}
+
+async function schimbaStatus(id, status) {
+  const alertEl = document.getElementById('alert');
+  try {
+    const res  = await fetch(`/api/rezervari/${id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ status })
+    });
+    const date = await res.json();
+    if (!res.ok) { alertEl.className = 'alert alert-error show'; alertEl.textContent = date.mesaj; return; }
+    alertEl.className = 'alert alert-success show';
+    alertEl.textContent = `Status actualizat: ${status}`;
+    incarcaRezervari();
+  } catch (e) {
+    alertEl.className = 'alert alert-error show'; alertEl.textContent = 'Eroare.';
+  }
+}
+
+incarcaRezervari();
+</script>
+</body>
+</html>
